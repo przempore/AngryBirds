@@ -1,0 +1,16 @@
+- rotacje NPC -> no i z tym jest problem.
++ zwiekszanie szybkosci w levelach
++ kolizja z t¹ przek¹tn¹
++ król œwinia
++ przesówaj¹ce siê niebo i ziemia
+
+
+kod do kolizji
+ distans = sqrt( ((postac.x  - xNPC)*(postac.x  - xNPC)) + ((postac.y  - yNPC)*(postac.y  - yNPC)) );
+            if (distans <=60)
+            {
+                postac.x=0;
+                postac.metry=0;
+                xNPC=800;
+                gra=0;
+            }
