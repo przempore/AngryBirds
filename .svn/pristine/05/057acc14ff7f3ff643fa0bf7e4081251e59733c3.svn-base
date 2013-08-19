@@ -1,0 +1,52 @@
+#include "../include/Actor.h"
+#include <string>
+
+
+Actor::Actor()
+{
+    this->x = 0.0;
+    this->y = 0.0;
+}
+
+Actor::Actor( float x, float y, std::string url )
+{
+    this->x = x;
+    this->y = y;
+    setSprite( url );
+}
+
+Actor::~Actor()
+{
+    //dtor
+}
+
+void Actor::setPosition( float x, float y )
+{
+    this->x = x;
+    this->y = y;
+}
+
+float Actor::getYPosition()
+{
+   return this->y;
+}
+
+float Actor::getXPosition()
+{
+    return this->x;
+}
+
+void Actor::setSprite( std::string url )
+{
+    if( texture.loadFromFile( url ) )
+    {
+        sprite.setTexture( texture );
+        sprite.setPosition( x, y );
+    }
+}
+
+void Actor::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    target.draw(sprite, states);
+}
+

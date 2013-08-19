@@ -1,0 +1,375 @@
+#include <SFML/Window.hpp>
+#include <SFML/Audio.hpp>
+//#include <ctime>
+#include <iostream>
+#include <sstream>
+#include <cmath>
+#include "include/Playground.h"
+#include "include/Player.h"
+#include "include/NPC.h"
+
+std::string int2str( int i );
+void game( sf::RenderWindow& );
+bool menu( sf::RenderWindow& );
+void endGameMenu( sf::RenderWindow& oknoAplikacji, sf::Text& );
+bool collision( Actor& player, Actor& npc );
+
+int main()
+{
+
+    sf::RenderWindow oknoAplikacji( sf::VideoMode( 800, 600, 32 ), "Latajacy ptak" );
+    game( oknoAplikacji );
+
+    return 0;
+}
+
+void game( sf::RenderWindow& oknoAplikacji )
+{
+    sf::Music music;
+    if(music.openFromFile("img/sample.ogg"))
+    {
+//        music.play();
+    }
+    music.setLoop( true );
+
+    // game background
+    Playground sky( 0.f, 0.f, "img/tlo.png" );
+    sky.setDimensions( 800, 357 );
+    sky.setV( 0.1f );
+    Playground sky2( sky.getDimensions().x, 0.f, "img/tlo.png" );
+    sky2.setDimensions( sky.getDimensions().x, sky.getDimensions().y );
+    sky2.setV( 0.1f );
+
+    Playground ground( 0.0f, sky.getDimensions().y, "img/kafelek.png" );
+    ground.setDimensions( 465.f, 255.f );
+    ground.setV( 0.2f );
+    Playground ground2( ground.getDimensions().x, sky.getDimensions().y, "img/kafelek.png" );
+    ground2.setDimensions( 465.f, 255.f );
+    ground2.setV( 0.2f );
+    Playground ground3( ground.getDimensions().x + ground2.getDimensions().x, sky.getDimensions().y, "img/kafelek.png" );
+    ground3.setDimensions( 465.f, 255.f );
+    ground3.setV( 0.2f );
+
+
+    // player
+    float playerX = 60.0f;
+    float playerY = 297.0f;
+    const float playerV = 0.5f;      // predkosc gracza
+    Player player( playerX, playerY, "img/gracz.png" );
+    player.setDimensions( 45.f, 60.f );
+    player.setV( playerV );
+
+    // pasek zycia
+    float hpLineX = 300.0;
+    float hpLineY  = 20.0;
+    sf::RectangleShape hpLine( sf::Vector2f( hpLineX, hpLineY ) );
+    hpLine.setPosition( 115, 570 );
+    hpLine.setFillColor( sf::Color::Red );
+
+    // czcionka
+    sf::Font font;
+    font.loadFromFile( "img/angrybirds.ttf" );
+
+    // player hp points
+    sf::Text textHP( "HP: " + int2str( player.getHPpoints() ), font, 25 );
+    textHP.setColor( sf::Color::Red );
+    textHP.setPosition( 30, 565 );
+
+    // Points
+    sf::Text textPoints( int2str( sky.getPoints() ), font, 25 );
+    textPoints.setColor( sf::Color::Red );
+    textPoints.setPosition( sf::Vector2f( 650, 30 ) );
+
+    // NPC
+    std::string NPCurl = "img/swinia.png";
+    const int NPCnum = 5 ;           // liczba NPCow
+    float NPCv = 0.3;            // predkosc NPCow
+    NPC npcTab[ NPCnum ];               // tablica NPC
+
+    srand( static_cast<unsigned>( time( NULL ) ) );
+    for( int i = 0; i < NPCnum; i++ )
+    {
+//        bool isTrue = true;
+        int r = rand() % 541;
+        int r2 = 800 + rand() % 701;
+        npcTab[ i ].setPosition( r2, r );
+        npcTab[ i ].setSprite( NPCurl );
+        npcTab[ i ].setV( NPCv );
+        npcTab[ i ].setDimensions( 60, 60 );
+
+//        for(int j = 0; j < i; j++ )     // nachodzenie na siebie swin
+//        {
+//            if( npcTab[ j ].getXPosition() <= npcTab[ i ].getXPosition() && npcTab[ j ].getXPosition() + 60 >= npcTab[ i ].getXPosition() &&
+//            npcTab[ j ].getYPosition() <= npcTab[ i ].getYPosition() && npcTab[ j ].getYPosition() + 60 >= npcTab[ i ].getYPosition() )
+//            {
+//                isTrue = false;
+//            }
+//        }
+//
+//        if( isTrue )
+//            i++;
+    }
+
+    // NPC King
+    NPC king( 1800, 223/*rand() % 466*/, "img/swinia3.png" );
+    king.setDimensions( 116, 134 );
+    king.setV( 1.f );
+
+    bool play = false;
+    // glowna petla programu
+    while( oknoAplikacji.isOpen() )
+    {
+        // petla menu
+        while( !play )
+        {
+            play = menu( oknoAplikacji );
+        }
+
+
+        sf::Event event;
+        while( oknoAplikacji.pollEvent( event ) )
+        {
+            if( event.type == sf::Event::Closed )       // zamykanie okna
+            {
+                oknoAplikacji.close();
+            }
+        }
+        if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+            oknoAplikacji.close();
+
+        // poruszanie sie gracza
+        if( sf::Keyboard::isKeyPressed( sf::Keyboard::Space ) || sf::Mouse::isButtonPressed( sf::Mouse::Left ) )
+        {
+            player.moveUp();
+        }
+        else if( player.getYPosition() < playerY )
+        {
+            player.moveDown();
+        }
+
+        // NPC
+        for( int i = 0; i < NPCnum; i++ )   // kolizja
+        {
+            if( player.getXPosition() <= npcTab[ i ].getXPosition() && player.getXPosition() + 45 >= npcTab[ i ].getXPosition() &&
+                player.getYPosition() <= npcTab[ i ].getYPosition() && player.getYPosition() + 60 >= npcTab[ i ].getYPosition() &&
+                player.getHPpoints() > 0.0 )
+//            if( collision( player, npcTab[ i ] ) || collision( player, king ) )
+            {
+                player.reduceHPpoints();
+                hpLine.setSize( sf::Vector2f( player.getHPpoints() * 3, hpLineY ) );
+            }
+        }
+
+
+        oknoAplikacji.clear();
+        if( player.getHPpoints() <= 0.0 )
+        {
+            // okno end game
+            endGameMenu( oknoAplikacji, textPoints );
+        }
+        else
+        {
+            oknoAplikacji.draw( sky );
+            oknoAplikacji.draw( sky2 );
+            oknoAplikacji.draw( ground );
+            oknoAplikacji.draw( ground2 );
+            oknoAplikacji.draw( ground3 );
+            oknoAplikacji.draw( player );
+            oknoAplikacji.draw( king );
+            king.move();
+            if( king.getXPosition() <= -king.getDimensions().x )
+            {
+                int x = 800 + rand() % 100000;
+                king.setPosition( x, king.getYPosition() );
+            }
+            for( int i = 0; i < NPCnum; i++ )
+            {
+                oknoAplikacji.draw( npcTab[ i ] );
+                npcTab[ i ].move();
+                if( npcTab[ i ].getXPosition() <= -npcTab[ i ].getDimensions().x )
+                {
+                    int x = 800 + rand() % 600;
+                    npcTab[ i ].setPosition( x, 0 );
+                }
+                if( npcTab[ i ].getXPosition() > 800 && npcTab[ i ].getXPosition() < 820 )
+                {
+                    int y = 0;
+                    if( player.getYPosition() - 50 >= 0 )
+                    {
+                        y = player.getYPosition() - 50 + ( rand() % 115 );
+                    }
+                    if( y > sky.getDimensions().y - npcTab[ i ].getDimensions().y )
+                    {
+                        y = sky.getDimensions().y - npcTab[ i ].getDimensions().y;
+                    }
+                    if( player.getYPosition() )
+                    npcTab[ i ].setPosition( npcTab[ i ].getXPosition(), y );
+                }
+            }
+            // przyspieszanie NPC
+            float division = sky.getPoints() / 10000.f;
+            for( int i = 0; i < NPCnum; i++ )
+            {
+                if( division > NPCv )
+                {
+                    npcTab[ i ].setV(  division  );
+                }
+            }
+
+            sky.risePoints();
+            sky.move( sky.getDimensions().x );
+            sky2.move( sky.getDimensions().x );
+            ground.move( ground.getDimensions().x + ground2.getDimensions().x - 1.f );
+            ground2.move( ground.getDimensions().x + ground2.getDimensions().x - 1.f );
+            ground3.move( ground.getDimensions().x + ground2.getDimensions().x - 1.f );
+            textPoints.setString(  "Score: " + int2str( sky.getPoints() ) );
+            oknoAplikacji.draw( textPoints );
+            oknoAplikacji.draw( hpLine );
+            textHP.setString( "HP: " + int2str( player.getHPpoints() ) );
+            oknoAplikacji.draw( textHP );
+        } // else
+        oknoAplikacji.display();
+    } // while petla gry
+}
+
+std::string int2str( int i )
+{
+    std::stringstream ss;
+    std::string tmp;
+    ss << i;
+    ss >> tmp;
+    return tmp;
+}
+
+bool menu( sf::RenderWindow& oknoAplikacji )
+{
+    oknoAplikacji.clear();
+
+    Playground menuBack( 0.0f, 0.0f, "img/menu.png");
+    Playground startB( 150.0f, 250.0f, "img/start.png" );
+
+    sf::Event event;
+    while( oknoAplikacji.pollEvent( event ) )
+    {
+        if( event.type == sf::Event::Closed )
+        {
+            oknoAplikacji.close();
+            return -1;
+        }
+    }
+    bool isClicked = sf::Mouse::isButtonPressed( sf::Mouse::Left );
+    bool isMarked = startB.getXPosition() <= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                    startB.getXPosition() + 263.0 >= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                    startB.getYPosition() <= sf::Mouse::getPosition( oknoAplikacji ).y &&
+                    startB.getYPosition() + 205.0 >= sf::Mouse::getPosition( oknoAplikacji ).y;
+
+    if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+    {
+        oknoAplikacji.close();
+    }
+    if( isMarked )
+    {
+        oknoAplikacji.draw( menuBack );
+        oknoAplikacji.draw( startB );
+    }
+    else
+    {
+        oknoAplikacji.draw( menuBack );
+    }
+
+    if( isMarked && isClicked )
+    {
+        return true;
+    }
+
+
+
+    Playground exitB( 550.0, 150.0, "img/exit.png" );
+    bool exitIsMarked = exitB.getXPosition() <= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                        exitB.getXPosition() + 155.0 >= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                        exitB.getYPosition() <= sf::Mouse::getPosition( oknoAplikacji ).y &&
+                        exitB.getYPosition() + 100.0 >= sf::Mouse::getPosition( oknoAplikacji ).y;
+    if( exitIsMarked )
+    {
+        oknoAplikacji.draw( menuBack );
+        oknoAplikacji.draw( exitB );
+        if( isClicked )
+        {
+            oknoAplikacji.close();
+        }
+    }
+
+    oknoAplikacji.display();
+
+    return false;
+}
+
+void endGameMenu( sf::RenderWindow& oknoAplikacji, sf::Text& textPoints )
+{
+
+    oknoAplikacji.clear();
+    Playground background( 250.0, 42.0, "img/boom.png" );
+    Playground exit( 85.0, 300.0, "img/exit.png" );
+    sf::Event event;
+    while( oknoAplikacji.pollEvent( event ) )
+    {
+        if( event.type == sf::Event::Closed )
+        {
+            oknoAplikacji.close();
+        }
+    }
+    bool isClicked = sf::Mouse::isButtonPressed( sf::Mouse::Left );
+    bool isMarked = exit.getXPosition() <= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                    exit.getXPosition() + 188.0 >= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                    exit.getYPosition() <= sf::Mouse::getPosition( oknoAplikacji ).y &&
+                    exit.getYPosition() + 121.0 >= sf::Mouse::getPosition( oknoAplikacji ).y;
+
+    if( isMarked )
+    {
+        exit.setSprite( "img/exitBIGGER.png" );
+        if( sf::Mouse::isButtonPressed( sf::Mouse::Left ) )
+        {
+            oknoAplikacji.close();
+        }
+    }
+
+    Playground playAgain( 350.0, 300.0, "img/repeat.png" );
+
+
+    isMarked = playAgain.getXPosition() <= sf::Mouse::getPosition( oknoAplikacji ).x &&
+               playAgain.getXPosition() + 299.0 >= sf::Mouse::getPosition( oknoAplikacji ).x &&
+               playAgain.getYPosition() <= sf::Mouse::getPosition( oknoAplikacji ).y &&
+               playAgain.getYPosition() + 213.0 >= sf::Mouse::getPosition( oknoAplikacji ).y;
+
+    if( isMarked )
+    {
+        playAgain.setSprite( "img/repeat2.png" );
+        if( isClicked )
+        {
+            //  jak to zrobic, trzeba przeorganizowac
+        }
+    }
+
+
+    oknoAplikacji.draw( background );
+    textPoints.setPosition( 380, 25 );
+    oknoAplikacji.draw( textPoints );
+    oknoAplikacji.draw( playAgain );
+    oknoAplikacji.draw( exit );
+}
+
+//bool collision( Actor& player, Actor& npc )
+//{
+//    float distance = sqrt( ( ( player.getMiddle().x - npc.getMiddle().x ) * ( player.getMiddle().x - npc.getMiddle().x ) ) +
+//                          ( ( player.getMiddle().y  - npc.getMiddle().y )*( player.getMiddle().y  - npc.getMiddle().y ) ) );
+//
+//    if( distance <= player.getDimensions().x/2 + npc.getDimensions().x/2 )
+//    {
+//        return true;
+//    }
+//
+//    return false;
+//
+//}
+
+

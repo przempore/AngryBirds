@@ -1,0 +1,20 @@
+#include "../include/Playground.h"
+#include <SFML/Audio.hpp>
+
+
+Playground::Playground(  float x, float y, std::string url ) : Actor( x, y, url )
+{
+    //ctor
+}
+
+Playground::~Playground()
+{
+    //dtor
+}
+
+void Playground::playMusic()
+{
+    sf::Music music;
+    if(music.openFromFile("img/sample.wav"))
+        music.play();
+}

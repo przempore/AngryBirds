@@ -1,0 +1,20 @@
+#ifndef PLAYGROUND_H
+#define PLAYGROUND_H
+
+#include "Actor.h"
+
+
+class Playground : public Actor
+{
+    public:
+        Playground( float x, float y, std::string url );
+        virtual ~Playground();
+        void playMusic();
+        void risePoints();
+        int getPoints();
+    protected:
+    private:
+        int points;
+};
+
+#endif // PLAYGROUND_H

@@ -15,6 +15,7 @@ class Player : public Actor
         void moveDown();
         int getHPpoints();
         void reduceHPpoints();
+        void heal();
 
     protected:
         static float HPpoints;

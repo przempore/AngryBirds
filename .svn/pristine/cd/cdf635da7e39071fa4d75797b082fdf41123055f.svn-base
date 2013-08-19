@@ -1,0 +1,22 @@
+#ifndef PLAYER_H
+#define PLAYER_H
+
+#include "../include/Actor.h"
+
+
+class Player : public Actor
+{
+    public:
+        Player( float x, float y, std::string url, float v = 0.5 );
+        virtual ~Player();
+        void moveUp();
+        void moveDown();
+        void setV( float v );
+
+        int HPpoints;
+    protected:
+        float v;
+    private:
+};
+
+#endif // PLAYER_H

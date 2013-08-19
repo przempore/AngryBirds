@@ -1,0 +1,41 @@
+#include "../include/Player.h"
+
+Player::Player( float x, float y, std::string url ) : Actor( x, y, url )
+{
+
+}
+
+Player::~Player()
+{
+    //dtor
+}
+
+void Player::moveUp()
+{
+    if( y > 5 && y <= 297/*520*/ )
+    {
+        sprite.setPosition( this->x, this->y -= this->v );
+    }
+}
+
+void Player::moveDown()
+{
+
+    if( this->y > 0 && this->y <= 297/*520*/ )
+    {
+        sprite.setPosition( this->x, this->y += this->v );
+    }
+
+}
+
+int Player::getHPpoints()
+{
+    return this->HPpoints;
+}
+
+void Player::reduceHPpoints()
+{
+    this->HPpoints--;
+}
+
+int Player::HPpoints = 100;

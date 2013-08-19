@@ -45,3 +45,12 @@ void Player::reduceHPpoints()
 }
 
 float Player::HPpoints = 100;
+
+void Player::heal()
+{
+    this->HPpoints += 25;
+    if( HPpoints >= 100 )
+    {
+        this->HPpoints = 100;
+    }
+}

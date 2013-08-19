@@ -1,0 +1,38 @@
+#include "../include/NPC.h"
+
+NPC::NPC() : Actor()
+{
+    this->x = 800;
+}
+
+NPC::NPC(float y, std::string url, float v ) : Actor( 780.0, y, url ), v( v )
+{
+
+}
+
+NPC::~NPC()
+{
+    //dtor
+}
+
+void NPC::move()
+{
+    if( x < -116 )
+    {
+        x = 800;
+    }
+    else
+    {
+        sprite.setPosition( x -= v, y );
+    }
+}
+
+void NPC::setYPosition( float y )
+{
+    this->y = y;
+}
+
+void NPC::setV( float v )
+{
+    this->v = v;
+}

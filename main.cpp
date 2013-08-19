@@ -107,6 +107,20 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
     king.setDimensions( 116, 134 );
     king.setV( 50.f );
 
+    // heal
+    NPC heal( 800 + rand() % 600, rand() % 304, "img/heart.png" );
+    heal.setDimensions( 60.f, 53.f );
+    heal.setV( 60.f );
+
+    NPC fast( 800 + rand() % 600, rand() % 304, "img/fast.png" );
+    fast.setDimensions( 101.f, 41.f );
+    fast.setV( 25.f );
+
+    NPC slow( 800 + rand() % 600, rand() % 304, "img/slow.jpg" );
+    slow.setDimensions( 59.f, 59.f );
+    slow.setV( 60.f );
+
+
     bool pauseGame = false;      // PAUSE GAME
     // glowna petla programu
     while( oknoAplikacji.isOpen() )
@@ -180,80 +194,131 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
                 hpLine.setSize( sf::Vector2f( player.getHPpoints() * 3, hpLineY ) );
             }
         } // for
-        oknoAplikacji.clear();
+
+        if( collision( player, heal ) )
+        {
+            player.heal();
+            hpLine.setSize( sf::Vector2f( player.getHPpoints() * 3, hpLineY ) );
+        }
+
+        if( collision( player, fast ) )
+        {
+            for( int i = 0; i < NPCnum; i++ )
+            {
+                npcTab[ i ].setV( npcTab[ i ].getV() + 7.f );
+            }
+        }
+
+        if( collision( player, slow ) )
+        {
+            for( int i = 0; i < NPCnum; i++ )
+            {
+                float tmpV = npcTab[ i ].getV() - 5.f;
+                if( tmpV > NPCv - 10.f )
+                {
+                    npcTab[ i ].setV( tmpV );
+                }
+            }
+        }
+
         if( player.getHPpoints() <= 0.0 )
         {
             break;
         }
-        else
+        oknoAplikacji.clear();
+        oknoAplikacji.draw( sky );
+        oknoAplikacji.draw( sky2 );
+        oknoAplikacji.draw( ground );
+        oknoAplikacji.draw( ground2 );
+        oknoAplikacji.draw( ground3 );
+        oknoAplikacji.draw( player );
+        oknoAplikacji.draw( king );
+        oknoAplikacji.draw( heal );
+        oknoAplikacji.draw( fast );
+        oknoAplikacji.draw( slow );
+        slow.move();
+        fast.move();
+        heal.move();
+        king.move();
+        if( king.getXPosition() <= -king.getDimensions().x )
         {
-            oknoAplikacji.draw( sky );
-            oknoAplikacji.draw( sky2 );
-            oknoAplikacji.draw( ground );
-            oknoAplikacji.draw( ground2 );
-            oknoAplikacji.draw( ground3 );
-            oknoAplikacji.draw( player );
-            oknoAplikacji.draw( king );
-            king.move();
-            if( king.getXPosition() <= -king.getDimensions().x )
+            int x = 1600 + rand() % 2800;
+            king.setPosition( x, king.getYPosition() );
+        } // if
+
+        if( heal.getXPosition() <= -heal.getDimensions().x )
+        {
+            int x = 10500 + rand() % 10500;
+            int y = rand() % (int)( sky.getDimensions().y - heal.getDimensions().y );
+            heal.setPosition( x, y );
+        } // if
+
+        if( fast.getXPosition() <= -fast.getDimensions().x )
+        {
+            int x = 10500 + rand() % 10500;
+            int y = rand() % (int)( sky.getDimensions().y - fast.getDimensions().y );
+            fast.setPosition( x, y );
+        }
+
+        if( slow.getXPosition() <= -slow.getDimensions().x )
+        {
+            int x = 10500 + rand() % 10500;
+            int y = rand() % (int)( sky.getDimensions().y - slow.getDimensions().y );
+            slow.setPosition( x, y );
+        }
+
+        for( int i = 0; i < NPCnum; i++ )
+        {
+            oknoAplikacji.draw( npcTab[ i ] );
+            npcTab[ i ].move();
+            if( npcTab[ i ].getXPosition() <= -npcTab[ i ].getDimensions().x )
             {
-                int x = 1600 + rand() % 2800;
-                king.setPosition( x, king.getYPosition() );
+                int x = 800 + rand() % 600;
+                npcTab[ i ].setPosition( x, 0 );
             } // if
-
-            for( int i = 0; i < NPCnum; i++ )
+            if( npcTab[ i ].getXPosition() > 800 && npcTab[ i ].getXPosition() < 900 )
             {
-                oknoAplikacji.draw( npcTab[ i ] );
-                npcTab[ i ].move();
-                if( npcTab[ i ].getXPosition() <= -npcTab[ i ].getDimensions().x )
+                int y = 0;
+                if( player.getYPosition() - 50 >= 0 )
                 {
-                    int x = 800 + rand() % 600;
-                    npcTab[ i ].setPosition( x, 0 );
-                } // if
-                if( npcTab[ i ].getXPosition() > 800 && npcTab[ i ].getXPosition() < 820 )
-                {
-                    int y = 0;
-                    if( player.getYPosition() - 50 >= 0 )
-                    {
-                        y = player.getYPosition() - 50 + ( rand() % 115 );
-                    }
-                    if( y > sky.getDimensions().y - npcTab[ i ].getDimensions().y )
-                    {
-                        y = sky.getDimensions().y - npcTab[ i ].getDimensions().y;
-                    }
-                    if( player.getYPosition() )
-                    npcTab[ i ].setPosition( npcTab[ i ].getXPosition(), y );
-                } // if
-            } // for
-
-            // przyspieszanie NPC
-            float division = textPoints.getPoints() / 5.f;
-            for( int i = 0; i < NPCnum; i++ )
-            {
-                if( division > NPCv )
-                {
-                    npcTab[ i ].setV(  npcTab[ i ].getV() + 0.01f );
+                    y = player.getYPosition() - 50 + ( rand() % 115 );
                 }
-            } // for
+                if( y > sky.getDimensions().y - npcTab[ i ].getDimensions().y )
+                {
+                    y = sky.getDimensions().y - npcTab[ i ].getDimensions().y;
+                }
+                npcTab[ i ].setPosition( npcTab[ i ].getXPosition(), y );
+            } // if
+        } // for
 
-            Playground muteText;
-            muteText.setPosition( 0.f, 0.f );
-            muteText.setFont();
-            muteText.text.setString( "(M)ute  (P)ause   (Q)uit" );
-            oknoAplikacji.draw( muteText.text );
+        // przyspieszanie NPC
+        float division = textPoints.getPoints() / 5.f;
+        for( int i = 0; i < NPCnum; i++ )
+        {
+            if( division > NPCv )
+            {
+                npcTab[ i ].setV(  npcTab[ i ].getV() + 0.01f );
+            }
+        } // for
 
-            textPoints.risePoints();
-            sky.move( sky.getDimensions().x );
-            sky2.move( sky.getDimensions().x );
-            ground.move( ground.getDimensions().x + ground2.getDimensions().x );
-            ground2.move( ground.getDimensions().x + ground2.getDimensions().x );
-            ground3.move( ground.getDimensions().x + ( ground2.getDimensions().x ) );
-            textPoints.text.setString(  "Score: " + textPoints.int2str( textPoints.getPoints() ) );
-            oknoAplikacji.draw( textPoints.text );
-            oknoAplikacji.draw( hpLine );
-            textHP.text.setString( "HP: " + textPoints.int2str( player.getHPpoints() ) );
-            oknoAplikacji.draw( textHP.text );
-        } // else
+        Playground muteText;
+        muteText.setPosition( 0.f, 0.f );
+        muteText.setFont();
+        muteText.text.setString( "(M)ute  (P)ause   (Q)uit" );
+        oknoAplikacji.draw( muteText.text );
+
+        textPoints.risePoints();
+        sky.move( sky.getDimensions().x );
+        sky2.move( sky.getDimensions().x );
+        ground.move( ground.getDimensions().x + ground2.getDimensions().x );
+        ground2.move( ground.getDimensions().x + ground2.getDimensions().x );
+        ground3.move( ground.getDimensions().x + ( ground2.getDimensions().x ) );
+        textPoints.text.setString(  "Score: " + textPoints.int2str( textPoints.getPoints() ) );
+        oknoAplikacji.draw( textPoints.text );
+        oknoAplikacji.draw( hpLine );
+        textHP.text.setString( "HP: " + textPoints.int2str( player.getHPpoints() ) );
+        oknoAplikacji.draw( textHP.text );
+
 
         oknoAplikacji.display();
         clock.restart();

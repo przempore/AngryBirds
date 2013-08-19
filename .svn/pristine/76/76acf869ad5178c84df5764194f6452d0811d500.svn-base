@@ -1,0 +1,20 @@
+#ifndef NPC_H
+#define NPC_H
+
+#include "../include/Actor.h"
+
+class NPC : public Actor
+{
+    public:
+        NPC();
+        NPC(float y, std::string url, float v = 0.5 );
+        virtual ~NPC();
+        void move();
+        void setYPosition( float y );
+        void setV( float v );
+    protected:
+        float v;
+    private:
+};
+
+#endif // NPC_H

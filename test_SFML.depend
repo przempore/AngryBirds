@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1376497946 source:c:\users\przemo\documents\workspace code\test_sfml\main.cpp
+1376938287 source:c:\users\przemo\documents\workspace code\test_sfml\main.cpp
 	<SFML/Window.hpp>
 	<SFML/Audio.hpp>
 	<cmath>
@@ -349,10 +349,10 @@
 1376641556 c:\users\przemo\documents\workspace code\test_sfml\include\actor.h
 	<SFML/Graphics.hpp>
 
-1376641307 source:c:\users\przemo\documents\workspace code\test_sfml\src\player.cpp
+1376940100 source:c:\users\przemo\documents\workspace code\test_sfml\src\player.cpp
 	"../include/Player.h"
 
-1376641307 c:\users\przemo\documents\workspace code\test_sfml\include\player.h
+1376925407 c:\users\przemo\documents\workspace code\test_sfml\include\player.h
 	"../include/Actor.h"
 
 1376160520 c:\users\przemo\documents\workspace code\test_sfml\include\playground.h

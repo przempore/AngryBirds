@@ -1,0 +1,26 @@
+#ifndef ACTOR_H
+#define ACTOR_H
+
+#include <SFML/Graphics.hpp>
+
+class Actor : public sf::Drawable
+{
+    public:
+        Actor();
+        Actor( float x, float y, std::string url );
+        virtual ~Actor();
+        virtual void setPosition( float x, float y );
+        virtual float getXPosition();
+        virtual float getYPosition();
+        void setSprite( std::string url );
+
+    protected:
+        sf::Texture texture;
+        sf::Sprite sprite;
+        float x, y;
+
+        virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+    private:
+};
+
+#endif // ACTOR_H

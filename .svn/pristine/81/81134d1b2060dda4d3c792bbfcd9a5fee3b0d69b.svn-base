@@ -1,0 +1,41 @@
+#include "../include/NPC.h"
+
+NPC::NPC() : Actor()
+{
+    this->x = 0;
+    this->y = 0;
+}
+
+NPC::NPC( float x, float y, std::string url ) : Actor( x, y, url )
+{
+
+}
+
+NPC::~NPC()
+{
+    //dtor
+}
+
+void NPC::move()
+{
+    if( x < -getDimensions().x )
+    {
+        x = 800;
+    }
+    else
+    {
+        sprite.setPosition( x -= v, y );
+//        sprite.rotate( -0.3f );
+    }
+}
+
+
+void NPC::setSprite( std::string url )
+{
+    if( texture.loadFromFile( url ) )
+    {
+        sprite.setTexture( texture );
+//        sprite.setPosition( this->x - getDimensions().x/2, this->y - getDimensions().y/2 );
+//        sprite.setOrigin( this->getDimensions().x/2, this->getDimensions().y/2 );
+    } // if
+}

@@ -1,0 +1,189 @@
+#include <SFML/Window.hpp>
+#include <SFML/Audio.hpp>
+#include <ctime>
+#include <iostream>
+//#include <string>
+#include <sstream>
+#include "include/Playground.h"
+#include "include/Player.h"
+#include "include/NPC.h"
+
+std::string int2str( int i );
+void game();
+
+int main()
+{
+    game();
+
+    return 0;
+}
+
+void game()
+{
+    sf::Music music;
+    if(music.openFromFile("img/sample.ogg"))
+        music.play();
+
+
+    // game background
+    float x = 0.0;
+    float y = 0.0;
+    std::string url = "img/texture.jpg";
+    Playground background( x, y, url );
+    background.playMusic();
+
+    // menu background
+    Playground menuBack( 0.0, 0.0, "img/menu.png");
+
+
+    // player
+    float playerX = 60.0;
+    float playerY = 500.0;
+    const float playerV = 0.5;      // predkosc gracza
+    url = "img/gracz.png";
+    Player player( playerX, playerY, url, playerV );
+    sf::RectangleShape hpLine( sf::Vector2f( 300, 20 ) );       // pasek zycia
+    hpLine.setPosition( 30, 570 );
+    hpLine.setFillColor( sf::Color::Red );
+    // czcionka
+    sf::Text textHP;
+    textHP.setString( int2str( player.HPpoints ) );
+    textHP.setCharacterSize( 25 );
+    textHP.setColor( sf::Color::Red );
+    textHP.setPosition( 35.0, 35.0 );
+
+
+    // NPC
+    url = "img/swinia.png";
+    const int NPCnum = 15 ;           // liczba NPCow
+    const float NPCv = 0.5;            // predkosc NPCow
+    NPC npcTab[ NPCnum ];               // tablica NPC
+    srand( static_cast<unsigned>( time( NULL ) ) );
+    for( int i = 0; i < NPCnum;  )
+    {
+        bool isTrue = true;
+        int r = rand() % 540 + 1;
+        int r2 = 800 + rand() % ( 1500 - 800 ) + 1;
+        npcTab[ i ].setPosition( r2, r );
+        npcTab[ i ].setSprite( url );
+        npcTab[ i ].setV( NPCv );
+
+        for(int j = 0; j < i; j++ )     // nachodzenie na siebie swin
+        {
+            if( npcTab[ j ].getYPosition() <= r + 60 && npcTab[ j ].getYPosition() >= r - 60 && npcTab[ j ].getXPosition() <= r + 60 && npcTab[ j ].getXPosition() >= r - 60 )
+            {
+                isTrue = false;
+            }
+        }
+
+        if( isTrue )
+            i++;
+    }
+
+    // glowna petla programu
+    sf::RenderWindow oknoAplikacji( sf::VideoMode( 800, 600, 32 ), "Latajacy ptak" );
+    bool play = false;
+    while( oknoAplikacji.isOpen() )
+    {
+        // petla menu
+        while( !play )
+        {
+            oknoAplikacji.draw( menuBack );
+            Playground startB( 150.0, 250.0, "img/start.png" );
+
+//            bool isMarked;
+
+            sf::Event event;
+            while( oknoAplikacji.pollEvent( event ) )
+            {
+                if( event.type == sf::Event::Closed )       // zamykanie okna
+                {
+                    oknoAplikacji.close();
+                }
+                if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+                {
+                    oknoAplikacji.close();
+                }
+                bool isMarked = startB.getXPosition() <= sf::Mouse::getPosition().x &&
+                                startB.getXPosition() + 263.0 >= sf::Mouse::getPosition().x &&
+                                startB.getYPosition() <= sf::Mouse::getPosition().y &&
+                                startB.getYPosition() + 205.0 >= sf::Mouse::getPosition().y;
+                bool isClicked = sf::Mouse::isButtonPressed( sf::Mouse::Left );
+                if( isMarked && sf::Event::MouseMoved )
+                {
+                    oknoAplikacji.draw( startB );
+                }
+                else
+                {
+                    oknoAplikacji.clear();
+                    oknoAplikacji.draw( menuBack );
+                }
+                if( isClicked && !isMarked ) //event.type == sf::Event::MouseButtonReleased )
+                {
+                    play = true;
+                }
+            }
+            oknoAplikacji.display();
+        }
+        // petla zdarzen
+        sf::Event zdarzenie;
+        while( oknoAplikacji.pollEvent( zdarzenie ) )
+        {
+            if( zdarzenie.type == sf::Event::Closed )       // zamykanie okna
+            {
+                oknoAplikacji.close();
+            }
+        }
+
+        if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+            oknoAplikacji.close();
+
+        // poruszanie sie gracza
+        if( sf::Keyboard::isKeyPressed( sf::Keyboard::Space ) || sf::Mouse::isButtonPressed( sf::Mouse::Left ) )
+        {
+            player.moveUp();
+        }
+        else if( player.getYPosition() < playerY )
+        {
+            player.moveDown();
+        }
+
+
+//        try
+//        {
+//            throw npc;
+//        }
+//        catch( Actor a )
+//        {
+//            player.HPpoints -= 1;
+//            hpLine.setSize( sf::Vector2f( player.HPpoints * 3, 20.0 ) );
+//            if( player.HPpoints <= 0.0 )
+//            {
+//                background.setSprite( "boom.png" );
+//            }
+//        }
+
+
+        // rysowanie wszystkiego
+        oknoAplikacji.clear();
+        oknoAplikacji.draw( background );
+        oknoAplikacji.draw( player );
+        for( int i = 0; i < NPCnum; i++ )
+        {
+            oknoAplikacji.draw( npcTab[ i ] );
+            npcTab[ i ].move();
+        }
+        oknoAplikacji.draw( hpLine );
+        oknoAplikacji.draw( textHP );
+        oknoAplikacji.display();
+    }
+}
+
+std::string int2str( int i )
+{
+    std::stringstream ss;
+    std::string tmp;
+    ss << i;
+    ss >> tmp;
+    return tmp;
+}

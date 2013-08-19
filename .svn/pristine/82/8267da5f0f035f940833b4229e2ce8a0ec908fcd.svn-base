@@ -1,0 +1,319 @@
+#include <SFML/Window.hpp>
+#include <SFML/Audio.hpp>
+#include <ctime>
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include "include/Playground.h"
+#include "include/Player.h"
+#include "include/NPC.h"
+
+std::string int2str( int i );
+void game( sf::RenderWindow& );
+bool menu( sf::RenderWindow& );
+void endGameMenu( sf::RenderWindow& oknoAplikacji, sf::Text& );
+void refreshNPC( std::vector<NPC>& npcVEC );
+
+int main()
+{
+
+    sf::RenderWindow oknoAplikacji( sf::VideoMode( 800, 600, 32 ), "Latajacy ptak" );
+    game( oknoAplikacji );
+
+    return 0;
+}
+
+void game( sf::RenderWindow& oknoAplikacji )
+{
+    sf::Music music;
+    if(music.openFromFile("img/sample.ogg"))
+    {
+        music.play();
+    }
+    music.setLoop( true );
+
+    // game background
+    Playground background( 0.0, 0.0, "img/texture.jpg" );
+
+    // player
+    float playerX = 60.0;
+    float playerY = 500.0;
+    const float playerV = 0.5;      // predkosc gracza
+    Player player( playerX, playerY, "img/gracz.png", playerV );
+
+    // pasek zycia
+    float hpLineX = 300.0;
+    float hpLineY  = 20.0;
+    sf::RectangleShape hpLine( sf::Vector2f( hpLineX, hpLineY ) );
+    hpLine.setPosition( 115, 570 );
+    hpLine.setFillColor( sf::Color::Red );
+
+    // czcionka
+    sf::Font font;
+    font.loadFromFile( "img/angrybirds.ttf" );
+
+    // player hp points
+    sf::Text textHP( "HP: " + int2str( player.HPpoints ), font, 25 );
+    textHP.setColor( sf::Color::Red );
+    textHP.setPosition( 30, 565 );
+
+    // Points
+    sf::Text textPoints( int2str( background.getPoints() ), font, 25 );
+    textPoints.setColor( sf::Color::Red );
+    textPoints.setPosition( sf::Vector2f( 650, 30 ) );
+
+    // NPC
+//    std::vector<NPC> npcVEC;
+    std::string NPCurl = "img/swinia.png";
+    const int NPCnum = 15 ;           // liczba NPCow
+    int npcI = 0;
+    const float NPCv = 0.5;            // predkosc NPCow
+    NPC npcTab[ NPCnum ];               // tablica NPC
+
+    srand( static_cast<unsigned>( time( NULL ) ) );
+    for( int i = 0; i < NPCnum;  )
+    {
+        bool isTrue = true;
+        int r = rand() % 540 + 1;
+        int r2 = 800 + rand() % ( 1500 - 800 ) + 1;
+        npcTab[ i ].setPosition( r2, r );
+        npcTab[ i ].setSprite( NPCurl );
+        npcTab[ i ].setV( NPCv );
+
+        for(int j = 0; j < i; j++ )     // nachodzenie na siebie swin
+        {
+            if( npcTab[ j ].getXPosition() <= npcTab[ i ].getXPosition() && npcTab[ j ].getXPosition() + 60 >= npcTab[ i ].getXPosition() &&
+            npcTab[ j ].getYPosition() <= npcTab[ i ].getYPosition() && npcTab[ j ].getYPosition() + 60 >= npcTab[ i ].getYPosition() )
+            {
+                isTrue = false;
+            }
+        }
+
+        if( isTrue )
+            i++;
+    }
+
+    bool play = false;
+    // glowna petla programu
+    while( oknoAplikacji.isOpen() )
+    {
+        // petla menu
+        while( !play )
+        {
+            play = menu( oknoAplikacji );
+        }
+
+
+        sf::Event event;
+        while( oknoAplikacji.pollEvent( event ) )
+        {
+            if( event.type == sf::Event::Closed )       // zamykanie okna
+            {
+                oknoAplikacji.close();
+            }
+        }
+        if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+            oknoAplikacji.close();
+
+        // poruszanie sie gracza
+        if( sf::Keyboard::isKeyPressed( sf::Keyboard::Space ) || sf::Mouse::isButtonPressed( sf::Mouse::Left ) )
+        {
+            player.moveUp();
+        }
+        else if( player.getYPosition() < playerY )
+        {
+            player.moveDown();
+        }
+
+        // NPC
+        for( int i = 0; i < NPCnum; i++ )
+        {
+            if( player.getXPosition() <= npcTab[ i ].getXPosition() && player.getXPosition() + 45 >= npcTab[ i ].getXPosition() &&
+                player.getYPosition() <= npcTab[ i ].getYPosition() && player.getYPosition() + 60 >= npcTab[ i ].getYPosition() &&
+               player.HPpoints > 0.0 )
+            {
+                player.HPpoints--;
+                hpLine.setSize( sf::Vector2f( player.HPpoints * 3, hpLineY ) );
+            }
+        }
+
+
+
+//        refreshNPC( npcVEC );
+
+
+
+
+        // okno end game
+        oknoAplikacji.clear();
+        if( player.HPpoints <= 0.0 )
+        {
+            endGameMenu( oknoAplikacji, textPoints );
+        }
+        else
+        {
+            oknoAplikacji.draw( background );
+            oknoAplikacji.draw( player );
+            for( int i = 0; i < NPCnum; i++ )
+//            for( int i = 0; i < npcVEC.size(); i++ )
+            {
+                oknoAplikacji.draw( npcTab[ i ] );
+                npcTab[ i ].move();
+//                oknoAplikacji.draw( npcVEC[ i ] );
+//                npcVEC[ i ].move();
+            }
+            background.risePoints();
+            textPoints.setString(  "Score: " + int2str( background.getPoints() ) );
+            oknoAplikacji.draw( textPoints );
+            oknoAplikacji.draw( hpLine );
+            textHP.setString( "HP: " + int2str( player.HPpoints ) );
+            oknoAplikacji.draw( textHP );
+        }
+        oknoAplikacji.display();
+    }
+}
+
+std::string int2str( int i )
+{
+    std::stringstream ss;
+    std::string tmp;
+    ss << i;
+    ss >> tmp;
+    return tmp;
+}
+
+bool menu( sf::RenderWindow& oknoAplikacji )
+{
+    oknoAplikacji.clear();
+
+    Playground menuBack( 0.0, 0.0, "img/menu.png");
+    Playground startB( 150.0, 250.0, "img/start.png" );
+
+    sf::Event event;
+    while( oknoAplikacji.pollEvent( event ) )
+    {
+        if( event.type == sf::Event::Closed )
+        {
+            oknoAplikacji.close();
+        }
+    }
+    bool isClicked = sf::Mouse::isButtonPressed( sf::Mouse::Left );
+    bool isMarked = startB.getXPosition() <= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                    startB.getXPosition() + 263.0 >= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                    startB.getYPosition() <= sf::Mouse::getPosition( oknoAplikacji ).y &&
+                    startB.getYPosition() + 205.0 >= sf::Mouse::getPosition( oknoAplikacji ).y;
+
+    if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+    {
+        oknoAplikacji.close();
+    }
+    if( isMarked )
+    {
+        oknoAplikacji.draw( menuBack );
+        oknoAplikacji.draw( startB );
+        if( isClicked )
+        {
+            return true;
+        }
+    }
+    else
+    {
+        oknoAplikacji.draw( menuBack );
+    }
+
+    Playground exitB( 550.0, 150.0, "img/exit.png" );
+    bool exitIsMarked = exitB.getXPosition() <= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                exitB.getXPosition() + 155.0 >= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                exitB.getYPosition() <= sf::Mouse::getPosition( oknoAplikacji ).y &&
+                exitB.getYPosition() + 100.0 >= sf::Mouse::getPosition( oknoAplikacji ).y;
+    if( exitIsMarked )
+    {
+        oknoAplikacji.draw( menuBack );
+        oknoAplikacji.draw( exitB );
+        if( isClicked )
+        {
+            oknoAplikacji.close();
+        }
+    }
+
+    oknoAplikacji.display();
+
+    return false;
+}
+
+void endGameMenu( sf::RenderWindow& oknoAplikacji, sf::Text& textPoints )
+{
+
+    oknoAplikacji.clear();
+    Playground background( 250.0, 42.0, "img/boom.png" );
+    Playground exit( 85.0, 300.0, "img/exit.png" );
+    sf::Event event;
+    while( oknoAplikacji.pollEvent( event ) )
+    {
+        if( event.type == sf::Event::Closed )
+        {
+            oknoAplikacji.close();
+        }
+    }
+    bool isClicked = sf::Mouse::isButtonPressed( sf::Mouse::Left );
+    bool isMarked = exit.getXPosition() <= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                    exit.getXPosition() + 188.0 >= sf::Mouse::getPosition( oknoAplikacji ).x &&
+                    exit.getYPosition() <= sf::Mouse::getPosition( oknoAplikacji ).y &&
+                    exit.getYPosition() + 121.0 >= sf::Mouse::getPosition( oknoAplikacji ).y;
+
+    if( isMarked )
+    {
+        exit.setSprite( "img/exitBIGGER.png" );
+        if( sf::Mouse::isButtonPressed( sf::Mouse::Left ) )
+        {
+            oknoAplikacji.close();
+        }
+    }
+
+    Playground playAgain( 350.0, 300.0, "img/repeat.png" );
+
+
+    isMarked = playAgain.getXPosition() <= sf::Mouse::getPosition( oknoAplikacji ).x &&
+               playAgain.getXPosition() + 299.0 >= sf::Mouse::getPosition( oknoAplikacji ).x &&
+               playAgain.getYPosition() <= sf::Mouse::getPosition( oknoAplikacji ).y &&
+               playAgain.getYPosition() + 213.0 >= sf::Mouse::getPosition( oknoAplikacji ).y;
+
+    if( isMarked )
+    {
+        playAgain.setSprite( "img/repeat2.png" );
+        if( isClicked )
+        {
+            //  jak to zrobic, trzeba przeorganizowac
+        }
+    }
+
+
+    oknoAplikacji.draw( background );
+    textPoints.setPosition( 380, 25 );
+    oknoAplikacji.draw( textPoints );
+    oknoAplikacji.draw( playAgain );
+    oknoAplikacji.draw( exit );
+}
+
+void refreshNPC( std::vector<NPC>& npcVEC )
+{
+
+    std::string NPCurl = "img/swinia.png";
+
+    srand( static_cast<unsigned>( time( NULL ) ) );
+    if( !npcVEC.size() )
+    {
+//        NPC npc( 800 + rand() % ( 1500 - 800 ) + 1, rand() % 540 + 1, NPCurl );
+        npcVEC.push_back( NPC( static_cast<float>( 800 + rand() % ( 1500 - 800 ) + 1 ), static_cast<float>( rand() % 540 + 1 ), NPCurl ) );
+//        NPC npc( 800 + rand() % ( 1500 - 800 ) + 1, rand() % 540 + 1, NPCurl );
+//        NPC npc( 400, 0, NPCurl );
+//        npcVEC.push_back( npc );
+    }
+    for( unsigned i = 0; i < npcVEC.size(); i++ )
+    {
+        if( npcVEC[ i ].getXPosition() == 0 )
+        {
+            npcVEC.push_back( NPC( static_cast<float>( 800 + rand() % ( 1500 - 800 ) + 1 ), static_cast<float>( rand() % 540 + 1 ), NPCurl ) );
+        }
+    }
+}

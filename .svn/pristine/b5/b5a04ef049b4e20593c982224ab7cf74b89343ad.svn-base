@@ -1,0 +1,58 @@
+#include "../include/Playground.h"
+
+
+Playground::Playground() : Actor()
+{
+
+}
+
+
+Playground::Playground(  float x, float y, std::string url ) : Actor( x, y, url )
+{
+    //ctor
+}
+
+Playground::~Playground()
+{
+    //dtor
+}
+
+void Playground::playMusic()
+{
+    if(music.openFromFile("img/sample.ogg"))
+    {
+        music.play();
+    }
+    music.setLoop( true );
+}
+
+void Playground::risePoints()
+{
+    points += 0.2f;
+}
+
+int Playground::getPoints()
+{
+    return this->points;
+}
+
+float Playground::points = 0;
+
+
+void Playground::move( float appear )
+{
+    if( x <= -getDimensions().x )
+    {
+        x = appear;
+    }
+    else
+    {
+        sprite.setPosition( x -= v, y );
+    }
+}
+
+void Playground::setFont()
+{
+    if( font.loadFromFile( "img/angrybirds.ttf" ) );
+    this->text.setFont( font );
+}
