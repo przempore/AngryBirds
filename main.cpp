@@ -110,18 +110,24 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
     // heal
     NPC heal( 800 + rand() % 600, rand() % 304, "img/heart.png" );
     heal.setDimensions( 60.f, 53.f );
-    heal.setV( 60.f );
+    heal.setV( 47.f );
 
     NPC fast( 800 + rand() % 600, rand() % 304, "img/fast.png" );
     fast.setDimensions( 101.f, 41.f );
     fast.setV( 25.f );
 
+    NPC shield( 1500 + rand() % 600, rand() % 275, "img/GoldenShield.png" );
+    shield.setDimensions( 70.f, 82.f );
+    shield.setV( 47.f );
+
     NPC slow( 800 + rand() % 600, rand() % 304, "img/slow.jpg" );
     slow.setDimensions( 59.f, 59.f );
-    slow.setV( 60.f );
+    slow.setV( 47.f );
 
 
     bool pauseGame = false;      // PAUSE GAME
+    bool isShield = false;
+    int shieldPkt = 0;
     // glowna petla programu
     while( oknoAplikacji.isOpen() )
     {
@@ -131,26 +137,6 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
         {
             sky.pauseMusic();
         } // if
-
-
-        if( sf::Keyboard::isKeyPressed( sf::Keyboard::P ) )           // PAUSE GAME
-        {
-            pauseGame = true;
-            Playground beginText;
-            beginText.setFont();
-            beginText.text.setString( "Paused\n(B)egin" );
-            beginText.text.setPosition( 360.f, 280.f );
-            oknoAplikacji.draw( beginText.text );
-            oknoAplikacji.display();
-        }// if
-
-        while( pauseGame )
-        {
-            if( sf::Keyboard::isKeyPressed( sf::Keyboard::B ) )
-            {
-                pauseGame = false;
-            } // if
-        } // while
 
         if( sf::Keyboard::isKeyPressed( sf::Keyboard::Q ) )         // wychodzenie z gry
         {
@@ -171,6 +157,7 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
                 oknoAplikacji.close();
             }
         } // while
+
         if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
         {
             oknoAplikacji.close();
@@ -184,16 +171,6 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
         {
             player.moveDown();
         }
-
-        // NPC
-        for( int i = 0; i < NPCnum; i++ )   // kolizja
-        {
-            if( collision( player, npcTab[ i ] ) || collision( player, king ) )
-            {
-                player.reduceHPpoints();
-                hpLine.setSize( sf::Vector2f( player.getHPpoints() * 3, hpLineY ) );
-            }
-        } // for
 
         if( collision( player, heal ) )
         {
@@ -221,25 +198,41 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
             }
         }
 
-        if( player.getHPpoints() <= 0.0 )
+        if( collision( player, shield ) )
         {
-            break;
+            isShield = true;
+            shieldPkt = textPoints.getPoints();
         }
-        oknoAplikacji.clear();
-        oknoAplikacji.draw( sky );
-        oknoAplikacji.draw( sky2 );
-        oknoAplikacji.draw( ground );
-        oknoAplikacji.draw( ground2 );
-        oknoAplikacji.draw( ground3 );
-        oknoAplikacji.draw( player );
-        oknoAplikacji.draw( king );
-        oknoAplikacji.draw( heal );
-        oknoAplikacji.draw( fast );
-        oknoAplikacji.draw( slow );
-        slow.move();
-        fast.move();
-        heal.move();
-        king.move();
+
+        if( isShield )
+        {
+            player.setSprite( "img/graczShield.png" );
+        }
+        else
+        {
+            player.setSprite( "img/gracz.png" );
+        }
+
+        if( textPoints.getPoints() >= shieldPkt + 75 )
+        {
+            isShield = false;
+        }
+
+        // NPC
+        for( int i = 0; i < NPCnum; i++ )   // kolizja
+        {
+            if( collision( player, npcTab[ i ] ) || collision( player, king ) )
+            {
+
+                if( !isShield )
+                {
+                    player.setSprite( "img/skwaszone.png" );
+                    player.reduceHPpoints();
+                }
+                hpLine.setSize( sf::Vector2f( player.getHPpoints() * 3, hpLineY ) );
+            }
+        } // for
+
         if( king.getXPosition() <= -king.getDimensions().x )
         {
             int x = 1600 + rand() % 2800;
@@ -248,28 +241,49 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
 
         if( heal.getXPosition() <= -heal.getDimensions().x )
         {
-            int x = 10500 + rand() % 10500;
+            int x = 35500 + rand() % 20500;
             int y = rand() % (int)( sky.getDimensions().y - heal.getDimensions().y );
             heal.setPosition( x, y );
         } // if
 
         if( fast.getXPosition() <= -fast.getDimensions().x )
         {
-            int x = 10500 + rand() % 10500;
+            int x = 10500 + rand() % 5500;
             int y = rand() % (int)( sky.getDimensions().y - fast.getDimensions().y );
             fast.setPosition( x, y );
         }
 
         if( slow.getXPosition() <= -slow.getDimensions().x )
         {
-            int x = 10500 + rand() % 10500;
+            int x = 22500 + rand() % 15500;
             int y = rand() % (int)( sky.getDimensions().y - slow.getDimensions().y );
             slow.setPosition( x, y );
         }
 
+        if( shield.getXPosition() <= -shield.getDimensions().x )
+        {
+            int x = 22500 + rand() % 15500;
+            int y = rand() % (int)( sky.getDimensions().y - shield.getDimensions().y );
+            shield.setPosition( x, y );
+        }
+
+        if( player.getHPpoints() <= 0.0 )
+        {
+            break;
+        }
+        slow.move();
+        fast.move();
+        heal.move();
+        king.move();
+        shield.move();
+        sky.move( sky.getDimensions().x );
+        sky2.move( sky.getDimensions().x );
+        ground.move( ground.getDimensions().x + ground2.getDimensions().x );
+        ground2.move( ground.getDimensions().x + ground2.getDimensions().x );
+        ground3.move( ground.getDimensions().x + ( ground2.getDimensions().x ) );
+
         for( int i = 0; i < NPCnum; i++ )
         {
-            oknoAplikacji.draw( npcTab[ i ] );
             npcTab[ i ].move();
             if( npcTab[ i ].getXPosition() <= -npcTab[ i ].getDimensions().x )
             {
@@ -301,6 +315,44 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
             }
         } // for
 
+
+        oknoAplikacji.draw( sky );
+        oknoAplikacji.draw( sky2 );
+        oknoAplikacji.draw( ground );
+        oknoAplikacji.draw( ground2 );
+        oknoAplikacji.draw( ground3 );
+        oknoAplikacji.draw( king );
+        oknoAplikacji.draw( heal );
+        oknoAplikacji.draw( fast );
+        oknoAplikacji.draw( slow );
+        oknoAplikacji.draw( shield );
+
+        for( int i = 0; i < NPCnum; i++ )
+        {
+            oknoAplikacji.draw( npcTab[ i ] );
+        }
+
+        oknoAplikacji.draw( player );
+        clock.restart();
+        if( sf::Keyboard::isKeyPressed( sf::Keyboard::P ) )           // PAUSE GAME
+        {
+            pauseGame = true;
+            Playground beginText;
+            beginText.setFont();
+            beginText.text.setString( "Paused\n(B)egin" );
+            beginText.text.setPosition( 360.f, 280.f );
+            oknoAplikacji.draw( beginText.text );
+            oknoAplikacji.display();
+        }// if
+
+        while( pauseGame )
+        {
+            if( sf::Keyboard::isKeyPressed( sf::Keyboard::B ) )
+            {
+                pauseGame = false;
+            } // if
+        } // while
+
         Playground muteText;
         muteText.setPosition( 0.f, 0.f );
         muteText.setFont();
@@ -308,21 +360,13 @@ void game( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
         oknoAplikacji.draw( muteText.text );
 
         textPoints.risePoints();
-        sky.move( sky.getDimensions().x );
-        sky2.move( sky.getDimensions().x );
-        ground.move( ground.getDimensions().x + ground2.getDimensions().x );
-        ground2.move( ground.getDimensions().x + ground2.getDimensions().x );
-        ground3.move( ground.getDimensions().x + ( ground2.getDimensions().x ) );
         textPoints.text.setString(  "Score: " + textPoints.int2str( textPoints.getPoints() ) );
         oknoAplikacji.draw( textPoints.text );
         oknoAplikacji.draw( hpLine );
         textHP.text.setString( "HP: " + textPoints.int2str( player.getHPpoints() ) );
         oknoAplikacji.draw( textHP.text );
-
-
         oknoAplikacji.display();
-        clock.restart();
-
+        oknoAplikacji.clear();
     } // while petla gry
 }
 
