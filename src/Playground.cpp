@@ -21,8 +21,6 @@ Playground::Playground(  float x, float y, std::string url ) : Actor( x, y, url 
 
 Playground::~Playground()
 {
-
-//    this->points = 0.f;
     //dtor
 }
 

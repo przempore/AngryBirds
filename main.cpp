@@ -533,20 +533,6 @@ bool endGameMenu( sf::RenderWindow& oknoAplikacji, Playground& textPoints )
     } // while
 }
 
-//bool collision( Actor& player, Actor& npc )
-//{
-//    float distance = sqrt( ( ( player.getMiddle().x - npc.getMiddle().x ) * ( player.getMiddle().x - npc.getMiddle().x ) ) +
-//                          ( ( player.getMiddle().y  - npc.getMiddle().y )*( player.getMiddle().y  - npc.getMiddle().y ) ) );
-//
-//    if( distance <= player.getDimensions().x/2 + npc.getDimensions().x/2 )
-//    {
-//        return true;
-//    }
-//
-//    return false;
-//
-//}
-
 bool collision( Actor& player, NPC& npc )
 {
 

@@ -42,8 +42,7 @@ void Actor::setSprite( std::string url )
     if( texture.loadFromFile( url ) )
     {
         sprite.setTexture( texture );
-//        sprite.setOrigin( this->getDimensions().x/2, this->getDimensions().y/2 );
-        sprite.setPosition( this->/*getDimensions().*/x, this->/*getDimensions().*/y );
+        sprite.setPosition( this->x, this->y );
     } // if
 }
 
@@ -59,12 +58,6 @@ sf::Vector2f Actor::getMiddle()
 
     return sf::Vector2f( vx, vy );
 }
-
-//sf::Vector2f Actor::getMiddle()
-//{
-//    float vx = this->x;
-//
-//}
 
 void Actor::setDimensions( float width, float height )
 {

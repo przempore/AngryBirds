@@ -1,13 +1,7 @@
 #ifndef PLAYGROUND_H
 #define PLAYGROUND_H
-
 #include "Actor.h"
 #include <SFML/Audio.hpp>
-//#include <fstream>
-//#include <iostream>
-//#include <string>
-//#include <vector>
-//#include <sstream>
 
 class Playground : public Actor
 {

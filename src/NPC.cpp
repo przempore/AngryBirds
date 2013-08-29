@@ -25,9 +25,7 @@ void NPC::move()
     else
     {
         sprite.setPosition( x -= v, y );
-//        sprite.setOrigin( this->getDimensions().x/2, this->getDimensions().y/2 );
-//        sprite.rotate( x ) ;
-//        sprite.rotate( -0.3f );
+
     }
 }
 
@@ -37,7 +35,5 @@ void NPC::setSprite( std::string url )
     if( texture.loadFromFile( url ) )
     {
         sprite.setTexture( texture );
-//        sprite.setPosition( this->x - getDimensions().x/2, this->y - getDimensions().y/2 );
-//        sprite.setOrigin( this->getDimensions().x/2, this->getDimensions().y/2 );
     } // if
 }
